@@ -71,7 +71,7 @@ def score_against(primer: str, target_region: str) -> Alignment:
     penalty = 0.0
     last = len(primer) - 1
 
-    for i, (code, base) in enumerate(zip(primer.upper(), target_region.upper())):
+    for i, (code, base) in enumerate(zip(primer.upper(), target_region.upper(), strict=False)):
         if base not in "ACGT" or not matches(code, base):
             distance = last - i
             mismatches.append(distance)
@@ -86,7 +86,10 @@ MAX_MISMATCH_FRACTION = 0.3
 
 
 def scan_strain(
-    primer: str, strain: str, *, reverse: bool = False,
+    primer: str,
+    strain: str,
+    *,
+    reverse: bool = False,
     max_mismatch_fraction: float = MAX_MISMATCH_FRACTION,
 ) -> Alignment:
     """Find the best binding site for a primer in a whole strain sequence.
@@ -152,7 +155,10 @@ class CoverageReport:
 
 
 def coverage(
-    primer: str, strains: Sequence[str], *, names: Sequence[str] | None = None,
+    primer: str,
+    strains: Sequence[str],
+    *,
+    names: Sequence[str] | None = None,
     reverse: bool = False,
 ) -> CoverageReport:
     """How much of the observed population this primer still detects.
@@ -166,7 +172,7 @@ def coverage(
     perfect = tolerated = blind = terminal = 0
     failing: list[str] = []
 
-    for name, strain in zip(names, strains):
+    for name, strain in zip(names, strains, strict=False):
         alignment = scan_strain(primer, strain, reverse=reverse)
         if alignment.terminal_mismatch:
             terminal += 1
@@ -179,14 +185,20 @@ def coverage(
             tolerated += 1
 
     return CoverageReport(
-        primer=primer, strains_tested=len(strains), perfect=perfect,
-        tolerated=tolerated, blind=blind, terminal_mismatches=terminal,
+        primer=primer,
+        strains_tested=len(strains),
+        perfect=perfect,
+        tolerated=tolerated,
+        blind=blind,
+        terminal_mismatches=terminal,
         failing_strains=failing,
     )
 
 
 def primer_health_alert(
-    report: CoverageReport, *, previous_coverage: float | None = None,
+    report: CoverageReport,
+    *,
+    previous_coverage: float | None = None,
     drop_threshold: float = 0.02,
 ) -> dict | None:
     """Raise an alert when a deployed primer's coverage falls.

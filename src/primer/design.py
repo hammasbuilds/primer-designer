@@ -15,7 +15,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 
-from .conservation import Position, conserved_windows, degenerate_consensus, degeneracy
+from .conservation import Position, conserved_windows, degeneracy, degenerate_consensus
 from .thermo import (
     SequenceError,
     gc_content,
@@ -64,7 +64,11 @@ class Candidate:
 
 
 def evaluate(
-    sequence: str, *, start: int, conservation: float, constraints: Constraints,
+    sequence: str,
+    *,
+    start: int,
+    conservation: float,
+    constraints: Constraints,
     is_reverse: bool = False,
 ) -> Candidate:
     """Check one candidate against every constraint.
@@ -77,16 +81,16 @@ def evaluate(
     deg = degeneracy(sequence)
 
     if not constraints.min_length <= len(sequence) <= constraints.max_length:
-        rejections.append(f"length {len(sequence)} outside "
-                          f"{constraints.min_length}-{constraints.max_length}")
+        rejections.append(
+            f"length {len(sequence)} outside {constraints.min_length}-{constraints.max_length}"
+        )
 
     if deg > constraints.max_degeneracy:
         rejections.append(f"degeneracy {deg} above {constraints.max_degeneracy}")
 
     gc = gc_content(sequence.replace("N", ""))
     if not constraints.min_gc <= gc <= constraints.max_gc:
-        rejections.append(f"GC {gc:.0%} outside "
-                          f"{constraints.min_gc:.0%}-{constraints.max_gc:.0%}")
+        rejections.append(f"GC {gc:.0%} outside {constraints.min_gc:.0%}-{constraints.max_gc:.0%}")
 
     if constraints.require_gc_clamp and not has_gc_clamp(sequence):
         rejections.append("no GC clamp at the 3' end")
@@ -98,8 +102,7 @@ def evaluate(
         rejections.append(f"hairpin stem {stem} above {constraints.max_hairpin_stem}")
 
     if (sc := self_complementarity(sequence)) > constraints.max_self_complementarity:
-        rejections.append(f"self-complementarity {sc} above "
-                          f"{constraints.max_self_complementarity}")
+        rejections.append(f"self-complementarity {sc} above {constraints.max_self_complementarity}")
 
     if (tp := three_prime_dimer(sequence)) > constraints.max_three_prime_dimer:
         rejections.append(f"3' dimer {tp} - extendable primer-dimer")
@@ -109,28 +112,48 @@ def evaluate(
         # Tm is computed on the most-common resolution of a degenerate primer; the
         # spread across variants is small relative to the constraint window.
         resolved = "".join(
-            b if b in "ACGT" else {"R": "A", "Y": "C", "S": "G", "W": "A", "K": "G",
-                                   "M": "A", "B": "C", "D": "A", "H": "A",
-                                   "V": "A", "N": "A"}[b]
+            b
+            if b in "ACGT"
+            else {
+                "R": "A",
+                "Y": "C",
+                "S": "G",
+                "W": "A",
+                "K": "G",
+                "M": "A",
+                "B": "C",
+                "D": "A",
+                "H": "A",
+                "V": "A",
+                "N": "A",
+            }[b]
             for b in sequence.upper()
         )
         tm = melting_temperature(resolved).tm
         if not constraints.min_tm <= tm <= constraints.max_tm:
-            rejections.append(f"Tm {tm:.1f} outside "
-                              f"{constraints.min_tm}-{constraints.max_tm}")
+            rejections.append(f"Tm {tm:.1f} outside {constraints.min_tm}-{constraints.max_tm}")
     except (SequenceError, KeyError) as exc:
         rejections.append(f"thermodynamics unavailable: {exc}")
 
     return Candidate(
-        sequence=sequence, start=start, length=len(sequence), tm=tm, gc=gc,
-        degeneracy=deg, conservation=conservation, is_reverse=is_reverse,
+        sequence=sequence,
+        start=start,
+        length=len(sequence),
+        tm=tm,
+        gc=gc,
+        degeneracy=deg,
+        conservation=conservation,
+        is_reverse=is_reverse,
         rejections=rejections,
     )
 
 
 def generate(
-    alignment: Sequence[str], positions: Sequence[Position], *,
-    constraints: Constraints | None = None, min_conservation: float = 0.98,
+    alignment: Sequence[str],
+    positions: Sequence[Position],
+    *,
+    constraints: Constraints | None = None,
+    min_conservation: float = 0.98,
 ) -> list[Candidate]:
     """All viable candidates across every conserved window and allowed length."""
     constraints = constraints or Constraints()
@@ -146,7 +169,9 @@ def generate(
             seen.add((start, length))
             sequence = degenerate_consensus(alignment, start, length)
             candidate = evaluate(
-                sequence, start=start, conservation=mean_conservation,
+                sequence,
+                start=start,
+                conservation=mean_conservation,
                 constraints=constraints,
             )
             if candidate.viable:
@@ -175,19 +200,19 @@ class PrimerPair:
             "tm_difference": round(self.tm_difference, 2),
             "degeneracy": self.forward.degeneracy * self.reverse.degeneracy,
             "score": round(self.score, 4),
-            "forward_coverage": (
-                self.forward_coverage.coverage if self.forward_coverage else None
-            ),
-            "reverse_coverage": (
-                self.reverse_coverage.coverage if self.reverse_coverage else None
-            ),
+            "forward_coverage": (self.forward_coverage.coverage if self.forward_coverage else None),
+            "reverse_coverage": (self.reverse_coverage.coverage if self.reverse_coverage else None),
         }
 
 
 def pair_candidates(
-    candidates: Sequence[Candidate], *, min_amplicon: int = 100,
-    max_amplicon: int = 400, max_tm_difference: float = 2.0,
-    strains: Sequence[str] | None = None, limit: int = 5,
+    candidates: Sequence[Candidate],
+    *,
+    min_amplicon: int = 100,
+    max_amplicon: int = 400,
+    max_tm_difference: float = 2.0,
+    strains: Sequence[str] | None = None,
+    limit: int = 5,
 ) -> list[PrimerPair]:
     """Pair forward and reverse candidates into usable assays.
 
@@ -205,10 +230,13 @@ def pair_candidates(
 
             reverse = Candidate(
                 sequence=reverse_complement(reverse_source.sequence),
-                start=reverse_source.start, length=reverse_source.length,
-                tm=reverse_source.tm, gc=reverse_source.gc,
+                start=reverse_source.start,
+                length=reverse_source.length,
+                tm=reverse_source.tm,
+                gc=reverse_source.gc,
                 degeneracy=reverse_source.degeneracy,
-                conservation=reverse_source.conservation, is_reverse=True,
+                conservation=reverse_source.conservation,
+                is_reverse=True,
             )
 
             tm_difference = abs(forward.tm - reverse.tm)
@@ -216,15 +244,14 @@ def pair_candidates(
                 continue
 
             forward_cov = coverage(forward.sequence, strains) if strains else None
-            reverse_cov = (
-                coverage(reverse_source.sequence, strains) if strains else None
-            )
+            reverse_cov = coverage(reverse_source.sequence, strains) if strains else None
 
             # Coverage first: a primer that no longer matches the pathogen is worth
             # nothing however good its thermodynamics.
             coverage_term = (
                 min(forward_cov.coverage, reverse_cov.coverage)
-                if forward_cov and reverse_cov else 1.0
+                if forward_cov and reverse_cov
+                else 1.0
             )
             conservation_term = (forward.conservation + reverse.conservation) / 2
             tm_term = 1 - tm_difference / max_tm_difference
@@ -237,11 +264,17 @@ def pair_candidates(
                 + 0.10 * degeneracy_term
             )
 
-            pairs.append(PrimerPair(
-                forward=forward, reverse=reverse, amplicon_length=amplicon,
-                tm_difference=tm_difference, score=score,
-                forward_coverage=forward_cov, reverse_coverage=reverse_cov,
-            ))
+            pairs.append(
+                PrimerPair(
+                    forward=forward,
+                    reverse=reverse,
+                    amplicon_length=amplicon,
+                    tm_difference=tm_difference,
+                    score=score,
+                    forward_coverage=forward_cov,
+                    reverse_coverage=reverse_cov,
+                )
+            )
 
     pairs.sort(key=lambda p: -p.score)
     return pairs[:limit]

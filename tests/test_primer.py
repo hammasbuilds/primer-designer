@@ -132,8 +132,16 @@ class TestSecondaryStructure:
 class TestIUPAC:
     @pytest.mark.parametrize(
         ("bases", "code"),
-        [("AG", "R"), ("CT", "Y"), ("GC", "S"), ("AT", "W"),
-         ("GT", "K"), ("AC", "M"), ("ACGT", "N"), ("A", "A")],
+        [
+            ("AG", "R"),
+            ("CT", "Y"),
+            ("GC", "S"),
+            ("AT", "W"),
+            ("GT", "K"),
+            ("AC", "M"),
+            ("ACGT", "N"),
+            ("A", "A"),
+        ],
     )
     def test_codes_cover_exactly_their_bases(self, bases, code):
         assert code_for(list(bases)) == code
@@ -310,7 +318,9 @@ class TestDesign:
     def test_every_constraint_failure_is_collected(self):
         """Fixing one at a time is how a design session takes a day."""
         candidate = evaluate(
-            "AAAAAAAAAAAAAAAAAAAA", start=0, conservation=1.0,
+            "AAAAAAAAAAAAAAAAAAAA",
+            start=0,
+            conservation=1.0,
             constraints=Constraints(),
         )
         assert len(candidate.rejections) >= 2
@@ -318,14 +328,18 @@ class TestDesign:
 
     def test_a_good_candidate_is_viable(self):
         candidate = evaluate(
-            "TGTCGAGCGACGGAATTAGA", start=0, conservation=1.0,
+            "TGTCGAGCGACGGAATTAGA",
+            start=0,
+            conservation=1.0,
             constraints=Constraints(),
         )
         assert candidate.viable, candidate.rejections
 
     def test_over_degenerate_candidates_are_rejected(self):
         candidate = evaluate(
-            "NNNNACCTGCAAGTGCATCG", start=0, conservation=1.0,
+            "NNNNACCTGCAAGTGCATCG",
+            start=0,
+            conservation=1.0,
             constraints=Constraints(max_degeneracy=16),
         )
         assert any("degeneracy" in r for r in candidate.rejections)
@@ -346,9 +360,7 @@ class TestDesign:
         """Two primers melting 6 °C apart cannot share an annealing temperature."""
         alignment = [CORE] * 10
         candidates = generate(alignment, analyse(alignment))
-        pairs = pair_candidates(
-            candidates, min_amplicon=20, max_amplicon=60, max_tm_difference=2.0
-        )
+        pairs = pair_candidates(candidates, min_amplicon=20, max_amplicon=60, max_tm_difference=2.0)
         assert all(p.tm_difference <= 2.0 for p in pairs)
 
     def test_a_pair_summary_is_reportable(self):

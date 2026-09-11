@@ -29,13 +29,16 @@ from dataclasses import dataclass
 
 # IUPAC ambiguity codes: symbol -> the set of bases it matches.
 IUPAC: dict[str, frozenset[str]] = {
-    "A": frozenset("A"), "C": frozenset("C"), "G": frozenset("G"), "T": frozenset("T"),
-    "R": frozenset("AG"),   # puRine
-    "Y": frozenset("CT"),   # pYrimidine
-    "S": frozenset("GC"),   # Strong (3 H-bonds)
-    "W": frozenset("AT"),   # Weak (2 H-bonds)
-    "K": frozenset("GT"),   # Keto
-    "M": frozenset("AC"),   # aMino
+    "A": frozenset("A"),
+    "C": frozenset("C"),
+    "G": frozenset("G"),
+    "T": frozenset("T"),
+    "R": frozenset("AG"),  # puRine
+    "Y": frozenset("CT"),  # pYrimidine
+    "S": frozenset("GC"),  # Strong (3 H-bonds)
+    "W": frozenset("AT"),  # Weak (2 H-bonds)
+    "K": frozenset("GT"),  # Keto
+    "M": frozenset("AC"),  # aMino
     "B": frozenset("CGT"),  # not A
     "D": frozenset("AGT"),  # not C
     "H": frozenset("ACT"),  # not G
@@ -81,8 +84,8 @@ class Position:
     index: int
     counts: dict[str, int]
     consensus: str
-    conservation: float   # 1.0 = invariant
-    entropy: float        # 0.0 = invariant, 2.0 = uniform over 4 bases
+    conservation: float  # 1.0 = invariant
+    entropy: float  # 0.0 = invariant, 2.0 = uniform over 4 bases
     gaps: int
 
 
@@ -117,14 +120,16 @@ def analyse(alignment: Sequence[str]) -> list[Position]:
         # data, not an observed difference.
         conservation = top / len(bases)
 
-        entropy = -sum(
-            (n / len(bases)) * math.log2(n / len(bases)) for n in counts.values()
-        )
+        entropy = -sum((n / len(bases)) * math.log2(n / len(bases)) for n in counts.values())
 
         positions.append(
             Position(
-                index=i, counts=dict(counts), consensus=consensus,
-                conservation=round(conservation, 6), entropy=round(entropy, 6), gaps=gaps,
+                index=i,
+                counts=dict(counts),
+                consensus=consensus,
+                conservation=round(conservation, 6),
+                entropy=round(entropy, 6),
+                gaps=gaps,
             )
         )
 
@@ -132,7 +137,10 @@ def analyse(alignment: Sequence[str]) -> list[Position]:
 
 
 def conserved_windows(
-    positions: Sequence[Position], *, length: int = 20, min_conservation: float = 0.99,
+    positions: Sequence[Position],
+    *,
+    length: int = 20,
+    min_conservation: float = 0.99,
     max_gap_fraction: float = 0.0,
 ) -> list[tuple[int, float]]:
     """Windows where every position clears the conservation threshold.
