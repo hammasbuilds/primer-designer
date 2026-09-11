@@ -182,3 +182,51 @@ annealing temperature, and the resulting inconsistency looks like operator error
 ## License
 
 MIT
+
+---
+
+## Run it yourself
+
+```bash
+git clone https://github.com/hammas159/primer-designer
+cd primer-designer
+
+pip install -e .         # zero dependencies to resolve
+pytest -q                # 64 tests, no sequence download, no BLAST
+```
+
+```python
+from primer import melting_temperature, analyse, generate, pair_candidates
+from primer import coverage, primer_health_alert
+
+melting_temperature("TGTCGAGCGACGGAATTAGA")       # Tm 56.3 °C at 50 mM Na+
+
+positions = analyse(aligned_strains)              # per-column conservation
+pairs = pair_candidates(generate(aligned_strains, positions), strains=aligned_strains)
+pairs[0].summary()
+
+# monthly primer-health check on a deployed assay
+report = coverage(deployed_primer, newly_sequenced_strains)
+primer_health_alert(report, previous_coverage=0.99)
+```
+
+Sequences must already be aligned — MAFFT or MUSCLE does that job and this repo does not
+duplicate it.
+
+## Problems hit while building this
+
+**The scanner reported a binding site that does not exist.** Ranking every candidate
+position by weighted mismatch penalty and taking the lowest sounds right, and on a
+drifted strain it selected a stretch of unrelated sequence with **sixteen mismatches out
+of twenty** over the true site carrying a single terminal mismatch.
+
+Coverage was still correct — both are blind — but the *diagnosis* was fabricated, and
+`terminal_mismatches` read zero while every strain carried one. **The headline number was
+right while the explanation was invented**, which is the most dangerous failure mode an
+analytical tool has. *Fixed* by discarding sites above 30% mismatch before ranking: the
+penalty model only applies to sequences that actually anneal.
+
+**A "good" test primer kept failing validation, correctly.** `TTGACC…ATCGA` ends in
+`TCGA`, which is palindromic, so it forms an extendable 3′ self-dimer — the reaction
+amplifies primer-on-primer and consumes itself. The code was right and my fixture was
+wrong; I searched for a genuinely clean primer instead of relaxing the constraint.
