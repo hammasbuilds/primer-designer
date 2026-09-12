@@ -1,4 +1,4 @@
-# primer-designer
+# primer-designer (Python, zero dependencies)
 
 [![ci](https://github.com/hammas159/primer-designer/actions/workflows/ci.yml/badge.svg)](https://github.com/hammas159/primer-designer/actions/workflows/ci.yml)
 ![python](https://img.shields.io/badge/python-3.10%2B-blue)
