@@ -1,19 +1,46 @@
-# primer-designer (Python, zero dependencies)
+<h1 align="center">primer-designer</h1>
+<p align="center"><i>Diagnostic PCR primers that survive a virus mutating - and an alert when they stop</i></p>
 
-[![ci](https://github.com/hammas159/primer-designer/actions/workflows/ci.yml/badge.svg)](https://github.com/hammas159/primer-designer/actions/workflows/ci.yml)
-![python](https://img.shields.io/badge/python-3.10%2B-blue)
-![dependencies](https://img.shields.io/badge/dependencies-none-success)
-![license](https://img.shields.io/badge/license-MIT-green)
+<p align="center">
+  <a href="#why-a-diagnostic-test-goes-blind">Why a test goes blind</a> &middot;
+  <a href="#primer-health-monitoring">Health monitoring</a> &middot;
+  <a href="#a-real-bug-this-project-caught">A real bug caught</a> &middot;
+  <a href="#thermodynamics">Thermodynamics</a> &middot;
+  <a href="#conservation-and-degeneracy">Conservation</a> &middot;
+  <a href="#problems-hit-while-building-this">Problems hit</a>
+</p>
 
-**Diagnostic PCR primers that survive a virus mutating — and an alert when they stop.**
-
-Nearest-neighbour thermodynamics, conservation analysis across observed strains,
-degenerate primer construction, and in-silico validation weighted by the mechanism that
-actually makes an assay fail. Zero dependencies.
+<p align="center">
+  <a href="https://github.com/hammas159/primer-designer/actions/workflows/ci.yml"><img src="https://github.com/hammas159/primer-designer/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
+  <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="python">
+  <img src="https://img.shields.io/badge/dependencies-zero-success" alt="deps">
+  <img src="https://img.shields.io/badge/data-NCBI%20GenBank-orange" alt="data">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
+</p>
 
 ---
 
 ## Why a diagnostic test goes blind
+
+```mermaid
+flowchart LR
+    S["observed strains<br/>NCBI GenBank"] --> C["conservation analysis"]
+    C --> D["degenerate primer<br/>construction"]
+    D --> T["nearest-neighbour<br/>thermodynamics"]
+    T --> V["in-silico validation<br/>weighted by real failure mechanism"]
+    V --> M["primer health monitoring"]
+    M --> AL{"still binding<br/>as strains drift?"}
+    AL -->|"no"| A["ALERT - the assay<br/>is going blind"]
+    AL -->|"yes"| OK["keep using it"]
+
+    style A fill:#dc2626,color:#fff
+    style OK fill:#16a34a,color:#fff
+```
+
+**A diagnostic test does not fail loudly.** It keeps returning negatives while the virus it
+was designed against drifts out from under it - so the monitoring, not the design, is the
+part that matters.
+
 
 A PCR primer is a short sequence that must match the pathogen it is looking for.
 Viruses mutate. When a mutation lands under a primer binding site, the primer stops
@@ -178,6 +205,10 @@ annealing temperature, and the resulting inconsistency looks like operator error
 - Degenerate Tm is computed on one resolution of the primer, not across all variants.
 - No wet-lab validation. Everything here is in silico, and in silico is where primer
   design *starts*.
+
+## Keywords
+
+PCR primer design &middot; bioinformatics &middot; diagnostics &middot; nearest-neighbour thermodynamics &middot; melting temperature &middot; degenerate primers &middot; conservation analysis &middot; in-silico PCR &middot; assay validation &middot; genomic surveillance &middot; NCBI GenBank &middot; viral mutation &middot; molecular diagnostics &middot; zero dependencies
 
 ## License
 
