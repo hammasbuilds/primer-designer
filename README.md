@@ -177,6 +177,25 @@ pathogen is worth nothing however elegant its thermodynamics.
 `max_tm_difference` defaults to 2 °C — two primers melting 6 °C apart cannot share an
 annealing temperature, and the resulting inconsistency looks like operator error.
 
+---
+
+## Input
+
+![input](docs/images/input.png)
+
+## Output
+
+`python demo.py`
+
+![output](docs/images/output.png)
+
+*Six of twelve strains carry a mismatch, yet coverage falls by exactly 25%, not 50%. The
+three mid-primer mismatches still amplify. The three on the final base do not, because a
+polymerase extends from the 3' end and cannot start on a mismatch. Position, not count,
+is what takes a validated assay out of service.*
+
+---
+
 ## Tests
 
 **64 tests. No dependencies, no sequence download, no BLAST.**
