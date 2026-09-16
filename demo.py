@@ -7,6 +7,7 @@ Second: the same primer checked against a drifted population, where one
 nucleotide at the 3' end is the difference between working and useless.
 No network, no dependencies.
 """
+
 import random
 import sys
 
@@ -39,8 +40,10 @@ print()
 print(f"   {'forward':26} {'reverse':26} {'amp':>5} {'Tm_f':>6} {'Tm_r':>6} {'dTm':>5}")
 for p in pairs:
     s = p.summary()
-    print(f"   {s['forward']:26} {s['reverse']:26} {s['amplicon']:>5} "
-          f"{s['tm_forward']:>6} {s['tm_reverse']:>6} {p.tm_difference:>5.2f}")
+    print(
+        f"   {s['forward']:26} {s['reverse']:26} {s['amplicon']:>5} "
+        f"{s['tm_forward']:>6} {s['tm_reverse']:>6} {p.tm_difference:>5.2f}"
+    )
 
 best = pairs[0]
 primer = best.forward.sequence
@@ -57,7 +60,7 @@ last = start + best.forward.length - 1
 
 def mutate(seq: str, at: int) -> str:
     swap = {"A": "G", "G": "A", "C": "T", "T": "C"}[seq[at]]
-    return seq[:at] + swap + seq[at + 1:]
+    return seq[:at] + swap + seq[at + 1 :]
 
 
 population = [CORE] * 6 + [mutate(CORE, mid)] * 3 + [mutate(CORE, last)] * 3
