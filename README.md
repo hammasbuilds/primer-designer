@@ -1,4 +1,4 @@
-<h1 align="center">primer-designer</h1>
+<h1 align="center">primer-designer (Python · nearest-neighbour thermodynamics · conservation analysis)</h1>
 <p align="center"><i>Diagnostic PCR primers that survive a virus mutating - and an alert when they stop</i></p>
 
 <p align="center">
